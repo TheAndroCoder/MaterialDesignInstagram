@@ -70,6 +70,12 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
                 finish();
             }
         });
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,GalleryActivity.class));
+            }
+        });
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

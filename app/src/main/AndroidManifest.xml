@@ -25,6 +25,7 @@
         </activity>
         <activity android:name=".RegisterActivity"/>
         <service android:name=".Services.UserService"/>
+        <activity android:name=".GalleryActivity"/>
     </application>
 
 </manifest>
