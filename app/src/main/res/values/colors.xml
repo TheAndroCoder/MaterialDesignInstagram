@@ -19,4 +19,10 @@
     <color name="text_like_counter">#2b5a83</color>
 
     <color name="bg_comments">#ffffff</color>
+    <array name="progress_colors">
+        <item>#6FA0F5</item>
+        <item>#4973F3</item>
+        <item>#1E4DDA</item>
+        <item>#0C26A7</item>
+    </array>
 </resources>

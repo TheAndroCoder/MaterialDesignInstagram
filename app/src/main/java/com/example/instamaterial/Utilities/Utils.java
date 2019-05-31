@@ -19,6 +19,16 @@ public class Utils {
         }
         return screenHeight;
     }
+    public  static int getScreenWidth(Context c){
+        if(screenHeight==0){
+            WindowManager manager=(WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
+            Display display=manager.getDefaultDisplay();
+            Point size=new Point();
+            display.getSize(size);
+            screenWidth=size.x;
+        }
+        return screenWidth;
+    }
     public static int dpToPx(int dp){
         return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
     }

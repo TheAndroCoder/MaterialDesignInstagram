@@ -14,7 +14,14 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 
 import com.example.instamaterial.Adapters.FeedAdapter;
+import com.example.instamaterial.Services.UserService;
+import com.example.instamaterial.Utilities.DatabaseHelper;
 import com.example.instamaterial.Utilities.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFeedItemClicklistener{
@@ -22,8 +29,11 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
     RecyclerView recyclerView;
     boolean pendingIntroAnim=false;
     FloatingActionButton fab;
-    ImageView navigation,InstaText,inboxBtn;
+    ImageView InstaText,inboxBtn;
+    CircleImageView profile_pic;
     FeedAdapter adapter;
+    private FirebaseAuth mAuth;
+    private DatabaseReference myRef;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         adapter=new FeedAdapter(this);
         adapter.setOnFeedItemClicklistener(this);
         recyclerView.setAdapter(adapter);
+        //DatabaseHelper helper=DatabaseHelper.getInstance(this);
+        //helper.fetchAllUsers();
         //toolbar.setNavigationIcon(R.drawable.ic_menu_white);
     }
     private void setupXmlLayouts(){
@@ -46,7 +58,18 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         fab=findViewById(R.id.fab3);
         inboxBtn=findViewById(R.id.inbox);
         InstaText=findViewById(R.id.ivLogo);
-        navigation=findViewById(R.id.toolbar_navigation);
+        profile_pic=findViewById(R.id.profile_pic);
+        mAuth=FirebaseAuth.getInstance();
+        myRef= FirebaseDatabase.getInstance().getReference();
+        //For now the profile pic icon works as signout button
+        profile_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAuth.signOut();
+                startActivity(new Intent(MainActivity.this,LoginActivity.class));
+                finish();
+            }
+        });
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -57,12 +80,12 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         fab.setTranslationY(2*getResources().getDimensionPixelOffset(R.dimen.btn_fab_size));
         int actionBarSize = Utils.dpToPx(56);
         toolbar.setTranslationY(-actionBarSize);
-        navigation.setTranslationX(-actionBarSize);
+        profile_pic.setTranslationX(-actionBarSize);
         InstaText.setTranslationY(-actionBarSize);
         inboxBtn.setTranslationX(actionBarSize);
         toolbar.animate().translationY(0).setDuration(300).setStartDelay(300).start();
         InstaText.animate().translationY(0).setDuration(400).setStartDelay(300).start();
-        navigation.animate().translationX(0).setStartDelay(500).setDuration(300).start();
+        profile_pic.animate().translationX(0).setStartDelay(500).setDuration(300).start();
         inboxBtn.animate().translationX(0).setStartDelay(500).setDuration(300).setListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
@@ -100,5 +123,20 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         intent.putExtra(CommentsActivity.ARG_DRAWING_START_LOCATION,startLocation[1]);
         startActivity(intent);
         overridePendingTransition(0,0);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if(FirebaseAuth.getInstance().getCurrentUser()!=null){
+            finishAffinity();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startService(new Intent(this, UserService.class));
+
     }
 }
