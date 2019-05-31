@@ -27,7 +27,7 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-        Log.d("sachin","Coming into gallery activity");
+        //Log.d("sachin","Coming into gallery activity");
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1001);
         }
@@ -49,8 +49,8 @@ public class GalleryActivity extends AppCompatActivity {
     }
     private void setupViewPager(){
         ViewPagerAdapter adapter=new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragments(new GalleryFragment(),"GALLERY");
-        adapter.addFragments(new CameraFragment(),"CAMERA");
+        adapter.addFragments(new GalleryFragment(),"PHOTO");
+        adapter.addFragments(new VideoFragment(),"VIDEO");
         viewpager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewpager);
     }

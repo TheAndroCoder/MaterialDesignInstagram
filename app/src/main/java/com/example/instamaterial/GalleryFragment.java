@@ -50,7 +50,7 @@ public class GalleryFragment extends Fragment{
                 int column_index_folder_name = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
                 while(cursor.moveToNext()){
                     imageList.add(cursor.getString(column_index_data));
-                    Log.d("sachin",cursor.getString(column_index_data));
+                    //Log.d("sachin",cursor.getString(column_index_data));
                 }
                 adapter=new PhotosAdapter(getActivity(),imageList);
                 recycler.setAdapter(adapter);
