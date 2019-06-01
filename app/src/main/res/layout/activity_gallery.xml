@@ -26,4 +26,13 @@
         android:layout_marginBottom="20dp"
         android:id="@+id/fab"
         />
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_action_camera"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="20dp"
+        android:id="@+id/camera"
+        />
 </RelativeLayout>

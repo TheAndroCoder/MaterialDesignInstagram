@@ -12,6 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.example.instamaterial.Models.Post;
 import com.example.instamaterial.Models.User;
 
 import java.util.ArrayList;
@@ -62,8 +63,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //db.execSQL(CREATE_TABLE_USERS);
-        //db.execSQL(CREATE_TABLE_POSTS);
-        db.execSQL(CREATE_TABLE_COMMENTS);
+        db.execSQL(CREATE_TABLE_POSTS);
+        //db.execSQL(CREATE_TABLE_COMMENTS);
     }
 
     @Override
@@ -89,5 +90,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d("sachin","fetched "+cursor.getString(cursor.getColumnIndex(USER_ID)));
         }
         Log.d("sachin","kintu eta call korechi");
+    }
+    public void insertPost(Post post){
+
     }
 }

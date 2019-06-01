@@ -2,10 +2,12 @@ package com.example.instamaterial;
 
 import android.Manifest;
 import android.animation.Animator;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -69,9 +71,10 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         profile_pic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mAuth.signOut();
-                startActivity(new Intent(MainActivity.this,LoginActivity.class));
-                finish();
+                //mAuth.signOut();
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,profile_pic,"sharedProfilePic");
+                startActivity(new Intent(MainActivity.this,ProfileActivity.class),options.toBundle());
+                //finish();
             }
         });
         fab.setOnClickListener(new View.OnClickListener() {

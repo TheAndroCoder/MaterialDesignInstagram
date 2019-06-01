@@ -9,11 +9,13 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.instamaterial.GalleryFragment;
 import com.example.instamaterial.R;
+import com.example.instamaterial.Utilities.Utils;
 import com.github.siyamed.shapeimageview.CircularImageView;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.MyViewHolder>{
     private Context context;
     private ArrayList<String> images;
+    private int lastAnimatedPosition=-1;
 
     public PhotosAdapter(Context context, ArrayList<String> images){
         this.context=context;
@@ -33,10 +36,19 @@ public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.MyViewHold
         View v= LayoutInflater.from(context).inflate(R.layout.grid_recycler_item,viewGroup,false);
         return new MyViewHolder(v);
     }
-
+    private void runEnterAnimation(View view,int position){
+        if(position>=1)
+            return;
+        if(position>lastAnimatedPosition){
+            lastAnimatedPosition=position;
+            view.setTranslationY(Utils.getScreenHeight(context));
+            view.animate().translationY(0).setInterpolator(new DecelerateInterpolator(3.f)).setStartDelay(1000).setDuration(700).start();
+        }
+    }
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder myViewHolder,final int i) {
         //Log.d("sachin","Trying to load photo");
+        //runEnterAnimation(myViewHolder.itemView,i);
         Glide.with(context).load(images.get(i)).into(myViewHolder.image);
         myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

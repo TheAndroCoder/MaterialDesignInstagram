@@ -22,7 +22,7 @@ import com.example.instamaterial.Utilities.Utils;
 public class GalleryActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewpager;
-    private FloatingActionButton fab;
+    private FloatingActionButton fab,camera;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +37,9 @@ public class GalleryActivity extends AppCompatActivity {
     }
     private void startIntroAnimations(){
         fab.setTranslationY(Utils.dpToPx(80));
-        fab.animate().translationY(0).setStartDelay(1000).setDuration(300).setInterpolator(new OvershootInterpolator()).start();
+        fab.animate().translationY(0).setStartDelay(2000).setDuration(300).setInterpolator(new OvershootInterpolator()).start();
+        camera.setTranslationY(Utils.dpToPx(80));
+        camera.animate().translationY(0).setStartDelay(2000).setDuration(300).setInterpolator(new OvershootInterpolator()).start();
         tabLayout.setTranslationY(-Utils.dpToPx(60));
         tabLayout.setAlpha(0.f);
         tabLayout.animate().translationY(0.f).alpha(1.f).setDuration(1000).setInterpolator(new AccelerateInterpolator()).start();
@@ -46,6 +48,8 @@ public class GalleryActivity extends AppCompatActivity {
         tabLayout=findViewById(R.id.tablayout);
         viewpager=findViewById(R.id.viewpager);
         fab=findViewById(R.id.fab);
+        camera=findViewById(R.id.camera);
+        //setup fab click listeners
     }
     private void setupViewPager(){
         ViewPagerAdapter adapter=new ViewPagerAdapter(getSupportFragmentManager());
@@ -53,5 +57,25 @@ public class GalleryActivity extends AppCompatActivity {
         adapter.addFragments(new VideoFragment(),"VIDEO");
         viewpager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewpager);
+        tabLayout.setOnTabSelectedListener(new TabLayout.BaseOnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if(tab.getText().equals("PHOTO")){
+                    camera.setImageResource(R.drawable.ic_action_camera);
+                }else{
+                    camera.setImageResource(R.drawable.ic_action_video);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
     }
 }

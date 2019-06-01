@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -34,6 +36,8 @@ public class GalleryFragment extends Fragment{
         recycler=v.findViewById(R.id.recycler);
         selectedImage=v.findViewById(R.id.selectedPic);
         recycler.setLayoutManager(new GridLayoutManager(getActivity(),3, LinearLayoutManager.VERTICAL,false));
+        LayoutAnimationController animation= AnimationUtils.loadLayoutAnimation(getActivity(),R.anim.layout_animation_from_bottom);
+        recycler.setLayoutAnimation(animation);
         imageList=new ArrayList<>();
         getAllPhotos();
 
