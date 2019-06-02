@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:id="@+id/toolbar"
+        android:background="@color/style_color_primary"
+        android:layout_height="?attr/actionBarSize">
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:id="@+id/back"
+            android:src="@drawable/ic_action_back"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/back"
+            android:layout_marginLeft="5dp"
+            android:id="@+id/searchBar"
+            android:background="@drawable/grey_border"
+            android:layout_marginRight="10dp">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Start typing..."
+                android:paddingLeft="10dp"
+                android:background="@null"
+                android:textSize="16sp"
+                android:id="@+id/username"
+                android:textColor="#000"
+                android:layout_gravity="center"
+                />
+        </RelativeLayout>
+    </RelativeLayout>
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/recycler"
+        android:layout_below="@+id/toolbar"></android.support.v7.widget.RecyclerView>
+</RelativeLayout>

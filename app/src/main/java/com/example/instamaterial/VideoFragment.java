@@ -56,11 +56,14 @@ public class VideoFragment extends Fragment {
                     list.add(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)));
                 }
                 cursor.close();
-                Bitmap thumb= ThumbnailUtils.createVideoThumbnail(list.get(0),MediaStore.Images.Thumbnails.MINI_KIND);
-                BitmapDrawable bitmapDrawable=new BitmapDrawable(thumb);
-                videoView.setBackgroundDrawable(bitmapDrawable);
-                videoView.setVideoURI(Uri.parse(list.get(0)));
-                getVideoLength(list.get(0));
+                //Log.d("sachin","Uri is "+list.get(0));
+                if(list.size()>0) {
+                    Bitmap thumb = ThumbnailUtils.createVideoThumbnail(list.get(0), MediaStore.Images.Thumbnails.MINI_KIND);
+                    BitmapDrawable bitmapDrawable = new BitmapDrawable(thumb);
+                    videoView.setBackgroundDrawable(bitmapDrawable);
+                    videoView.setVideoURI(Uri.parse(list.get(0)));
+                    getVideoLength(list.get(0));
+                }
                 playpause.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

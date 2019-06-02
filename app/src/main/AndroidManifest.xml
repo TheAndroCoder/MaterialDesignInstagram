@@ -29,6 +29,9 @@
         <service android:name=".Services.UserService"/>
         <activity android:name=".GalleryActivity"/>
         <activity android:name=".ProfileActivity"/>
+        <activity android:name=".SettingsActivity"/>
+        <activity android:name=".PostActivity"/>
+        <activity android:name=".SearchActivity"/>
     </application>
 
 </manifest>

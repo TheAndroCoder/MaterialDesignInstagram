@@ -1,8 +1,13 @@
 package com.example.instamaterial;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -11,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
@@ -50,6 +56,20 @@ public class GalleryActivity extends AppCompatActivity {
         fab=findViewById(R.id.fab);
         camera=findViewById(R.id.camera);
         //setup fab click listeners
+        camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(tabLayout.getSelectedTabPosition()==0){
+                    //Open Camera for still photo capture
+                    Intent cameraIntent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent,1002);
+                }else{
+                    //open video camera for video capture
+                    Intent videoIntent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    startActivityForResult(videoIntent,1003);
+                }
+            }
+        });
     }
     private void setupViewPager(){
         ViewPagerAdapter adapter=new ViewPagerAdapter(getSupportFragmentManager());
@@ -77,5 +97,29 @@ public class GalleryActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(requestCode==1002 && resultCode== Activity.RESULT_OK){
+            Bitmap photo=(Bitmap)data.getExtras().get("data");
+            //Take to next Activity
+            Bundle bundle=new Bundle();
+            bundle.putString("type","image");
+            bundle.putParcelable("data",photo);
+            Intent intent = new Intent(GalleryActivity.this,PostActivity.class);
+            intent.putExtra("bundle",bundle);
+            startActivity(intent);
+        }
+        else if(requestCode==1003 && resultCode==Activity.RESULT_OK){
+            Uri videoUri=data.getData();
+            Bundle bundle=new Bundle();
+            bundle.putString("type","video");
+            bundle.putParcelable("uri",videoUri);
+            Intent intent = new Intent(GalleryActivity.this,PostActivity.class);
+            intent.putExtra("bundle",bundle);
+            startActivity(intent);
+
+        }
     }
 }

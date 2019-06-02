@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
     RecyclerView recyclerView;
     boolean pendingIntroAnim=false;
     FloatingActionButton fab;
-    ImageView InstaText,inboxBtn;
+    ImageView InstaText,searchBtn;
     CircleImageView profile_pic;
     FeedAdapter adapter;
     private FirebaseAuth mAuth;
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         toolbar=findViewById(R.id.toolbar);
         recyclerView=findViewById(R.id.rvFeed);
         fab=findViewById(R.id.fab3);
-        inboxBtn=findViewById(R.id.inbox);
+        searchBtn=findViewById(R.id.search);
         InstaText=findViewById(R.id.ivLogo);
         profile_pic=findViewById(R.id.profile_pic);
         mAuth=FirebaseAuth.getInstance();
@@ -83,6 +83,14 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
                 startActivity(new Intent(MainActivity.this,GalleryActivity.class));
             }
         });
+        searchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Open new activity with ovveridePendingTransition(0,0) and don't finish the current activity
+                startActivity(new Intent(MainActivity.this,SearchActivity.class));
+                overridePendingTransition(0,0);
+            }
+        });
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -95,11 +103,11 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         toolbar.setTranslationY(-actionBarSize);
         profile_pic.setTranslationX(-actionBarSize);
         InstaText.setTranslationY(-actionBarSize);
-        inboxBtn.setTranslationX(actionBarSize);
+        searchBtn.setTranslationX(actionBarSize);
         toolbar.animate().translationY(0).setDuration(300).setStartDelay(300).start();
         InstaText.animate().translationY(0).setDuration(400).setStartDelay(300).start();
         profile_pic.animate().translationX(0).setStartDelay(500).setDuration(300).start();
-        inboxBtn.animate().translationX(0).setStartDelay(500).setDuration(300).setListener(new Animator.AnimatorListener() {
+        searchBtn.animate().translationX(0).setStartDelay(500).setDuration(300).setListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
 
@@ -149,6 +157,10 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
     @Override
     protected void onStart() {
         super.onStart();
+        if(mAuth.getCurrentUser()==null){
+            startActivity(new Intent(this,LoginActivity.class));
+            finish();
+        }
         startService(new Intent(this, UserService.class));
 
     }
