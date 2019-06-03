@@ -1,6 +1,7 @@
 package com.example.instamaterial;
 
 import android.animation.Animator;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,14 +16,23 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.example.instamaterial.Models.Post;
+import com.example.instamaterial.Utilities.DatabaseHelper;
 import com.example.instamaterial.Utilities.Utils;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
 
 public class PostActivity extends AppCompatActivity {
     private ImageView postImage,typeImage;
@@ -33,6 +43,9 @@ public class PostActivity extends AppCompatActivity {
     private Uri videoUri=null;
     private FirebaseAuth mAuth;
     private DatabaseReference myRef;
+    private StorageReference storageReference;
+    private ProgressBar progress;
+    private EditText post_text;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,8 +58,11 @@ public class PostActivity extends AppCompatActivity {
         toolbar=findViewById(R.id.toolbar);
         postImage=findViewById(R.id.postImage);
         typeImage=findViewById(R.id.typeImage);
+        progress=findViewById(R.id.progress);
         mAuth=FirebaseAuth.getInstance();
+        post_text=findViewById(R.id.postText);
         myRef= FirebaseDatabase.getInstance().getReference();
+        storageReference= FirebaseStorage.getInstance().getReference();
         //get the image data from intent and post
         if(getIntent().getExtras()!=null){
             type=getIntent().getBundleExtra("bundle").getString("type");
@@ -73,7 +89,9 @@ public class PostActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //Put the post into Sqlite DB, Firebase DB and Image/Video into Firebase Storage
                 //Upload the image to firebase storage first so that we get the download link and then we can set the Post POJO
-                Post post = new Post(Utils.getRandomkey(),mAuth.getCurrentUser().getUid(),Utils.getDateString(),Utils.getRandomkey(),type,"","","");
+                progress.setVisibility(View.VISIBLE);
+                sendPost.setVisibility(View.GONE);
+                post();
             }
         });
     }
@@ -115,5 +133,35 @@ public class PostActivity extends AppCompatActivity {
             res=cursor.getString(idx);
         }
         return  res;
+    }
+    private void post(){
+        final DatabaseHelper helper=DatabaseHelper.getInstance(this);
+
+        final String Post_id=Utils.getRandomkey();
+        if(type.equals("image")){
+            //It is an Image post so upload bitmap
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,baos);
+            byte[] data= baos.toByteArray();
+            final StorageReference path = storageReference.child("Posts").child(mAuth.getCurrentUser().getUid()).child(Post_id);
+            path.putBytes(data).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    path.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Post post=new Post(Post_id,mAuth.getCurrentUser().getUid(),Utils.getDateString(),Utils.getRandomkey(),type,uri.toString(),post_text.getText().toString(),Utils.getRandomkey());
+                            myRef.child("Posts").child(Post_id).setValue(post);
+                            helper.insertPost(post);
+                            PostActivity.this.startActivity(new Intent(PostActivity.this,MainActivity.class));
+                            PostActivity.this.finish();
+                        }
+                    });
+                }
+            });
+
+        }else{
+            //It is a video post
+        }
     }
 }

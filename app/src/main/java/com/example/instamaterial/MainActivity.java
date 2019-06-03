@@ -3,8 +3,11 @@ package com.example.instamaterial;
 import android.Manifest;
 import android.animation.Animator;
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -18,13 +21,18 @@ import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.example.instamaterial.Adapters.FeedAdapter;
+import com.example.instamaterial.Models.User;
 import com.example.instamaterial.Services.UserService;
 import com.example.instamaterial.Utilities.DatabaseHelper;
 import com.example.instamaterial.Utilities.Utils;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -39,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
     FeedAdapter adapter;
     private FirebaseAuth mAuth;
     private DatabaseReference myRef;
+    private SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,9 +63,12 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         adapter=new FeedAdapter(this);
         adapter.setOnFeedItemClicklistener(this);
         recyclerView.setAdapter(adapter);
-        //DatabaseHelper helper=DatabaseHelper.getInstance(this);
-        //helper.fetchAllUsers();
-        //toolbar.setNavigationIcon(R.drawable.ic_menu_white);
+        //Fetch the user data and store it in Shared Preferences
+        preferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
+        if(preferences.getString("UID",null)==null)
+            saveUserToPreferences();
+        else
+            Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
     }
     private void setupXmlLayouts(){
         toolbar=findViewById(R.id.toolbar);
@@ -168,5 +180,26 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.INTERNET},1001);
         }
+    }
+    private void saveUserToPreferences(){
+
+        final SharedPreferences.Editor editor=preferences.edit();
+        myRef.child("Users").child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                editor.putString("UID",mAuth.getCurrentUser().getUid());
+                editor.putString("USERNAME",user.getName());
+                editor.putString("EMAIL",user.getEmail());
+                editor.putString("DP_URL",user.getDp_url());
+                Glide.with(MainActivity.this).load(user.getDp_url()).into(profile_pic);
+                editor.commit();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

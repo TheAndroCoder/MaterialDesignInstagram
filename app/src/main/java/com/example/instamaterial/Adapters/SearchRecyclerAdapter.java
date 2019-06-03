@@ -1,8 +1,16 @@
 package com.example.instamaterial.Adapters;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityOptionsCompat;
+
 import android.support.v7.widget.RecyclerView;
+
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +18,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.instamaterial.Models.User;
+import com.example.instamaterial.ProfileActivity;
 import com.example.instamaterial.R;
 
 import java.util.ArrayList;
@@ -31,10 +40,24 @@ public class SearchRecyclerAdapter extends RecyclerView.Adapter<SearchRecyclerAd
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
+    public void onBindViewHolder(@NonNull final MyViewHolder myViewHolder, final int i) {
         Glide.with(context).load(users.get(i).getDp_url()).into(myViewHolder.profile_pic);
         myViewHolder.username.setText(users.get(i).getName());
         myViewHolder.email.setText(users.get(i).getEmail());
+        myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle b = new Bundle();
+                b.putString("UID",users.get(i).getUid());
+                b.putString("DP_URL",users.get(i).getDp_url());
+                b.putString("USERNAME",users.get(i).getName());
+                Intent intent=new Intent(context,ProfileActivity.class);
+                intent.putExtra("bundle",b);
+                ActivityOptions options =  ActivityOptions.makeSceneTransitionAnimation((Activity)context, myViewHolder.profile_pic,"sharedProfilePic");
+                context.startActivity(intent,options.toBundle());
+
+            }
+        });
     }
 
     @Override

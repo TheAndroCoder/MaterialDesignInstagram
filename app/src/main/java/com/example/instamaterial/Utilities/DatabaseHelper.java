@@ -92,6 +92,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("sachin","kintu eta call korechi");
     }
     public void insertPost(Post post){
-
+        SQLiteDatabase db = this.getWritableDatabase();
+        String QUERY = "insert into "+POST_TABLE+" values('"+post.getId()+"','"+post.getBy_id()+"','"+post.getPost_date()+"','"+post.getComment_id()+"','"+post.getType()+"','"+post.getPost_url()+"','"+post.getPost_text()+"','"+post.getLike_id()+"')";
+        db.execSQL(QUERY);
     }
 }
