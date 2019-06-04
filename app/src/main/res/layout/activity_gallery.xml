@@ -16,16 +16,7 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/tablayout"
         android:id="@+id/viewpager"></android.support.v4.view.ViewPager>
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_action_check"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="20dp"
-        android:layout_marginBottom="20dp"
-        android:id="@+id/fab"
-        />
+
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

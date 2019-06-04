@@ -96,4 +96,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String QUERY = "insert into "+POST_TABLE+" values('"+post.getId()+"','"+post.getBy_id()+"','"+post.getPost_date()+"','"+post.getComment_id()+"','"+post.getType()+"','"+post.getPost_url()+"','"+post.getPost_text()+"','"+post.getLike_id()+"')";
         db.execSQL(QUERY);
     }
+    public ArrayList<Post> getMyPosts(){
+        ArrayList<Post> posts = new ArrayList<>();
+        SQLiteDatabase db=this.getReadableDatabase();
+        //db.execSQL("select * from "+POST_TABLE);
+        Cursor cursor=db.rawQuery("select * from "+POST_TABLE,null);
+        while(cursor.moveToNext()){
+            Post post=new Post();
+            post.setId(cursor.getString(cursor.getColumnIndex(POST_ID)));
+            post.setBy_id(cursor.getString(cursor.getColumnIndex(BY_ID)));
+            post.setPost_date(cursor.getString(cursor.getColumnIndex(POST_DATE)));
+            post.setComment_id(cursor.getString(cursor.getColumnIndex(COMMENT_ID)));
+            post.setType(cursor.getString(cursor.getColumnIndex(POST_TYPE)));
+            post.setPost_url(cursor.getString(cursor.getColumnIndex(POST_URL)));
+            post.setPost_text(cursor.getString(cursor.getColumnIndex(POST_TEXT)));
+            post.setLike_id(cursor.getString(cursor.getColumnIndex(LIKE_ID)));
+            posts.add(post);
+        }
+        return posts;
+    }
 }

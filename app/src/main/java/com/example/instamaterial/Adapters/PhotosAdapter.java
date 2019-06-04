@@ -13,6 +13,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.example.instamaterial.GalleryActivity;
 import com.example.instamaterial.GalleryFragment;
 import com.example.instamaterial.R;
 import com.example.instamaterial.Utilities.Utils;
@@ -20,14 +21,24 @@ import com.github.siyamed.shapeimageview.CircularImageView;
 
 import java.util.ArrayList;
 
-public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.MyViewHolder>{
+public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.MyViewHolder> {
     private Context context;
     private ArrayList<String> images;
     private int lastAnimatedPosition=-1;
 
+
+
+    public interface onItemClick{
+        void onClick(String uri);
+    }
+    private onItemClick listener;
+    public void setOnItemClickListener(onItemClick listener){
+        this.listener=listener;
+    }
     public PhotosAdapter(Context context, ArrayList<String> images){
         this.context=context;
         this.images=images;
+
         //Log.d("sachin","Called recycler Grid constructor");
     }
     @NonNull
@@ -53,7 +64,8 @@ public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.MyViewHold
         myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                GalleryFragment.selectedImage.setImageURI(Uri.parse(images.get(i)));
+
+                listener.onClick(images.get(i));
             }
         });
     }

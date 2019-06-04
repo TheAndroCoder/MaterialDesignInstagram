@@ -66,20 +66,31 @@ public class PostActivity extends AppCompatActivity {
         //get the image data from intent and post
         if(getIntent().getExtras()!=null){
             type=getIntent().getBundleExtra("bundle").getString("type");
-            if(type.equals("image")){
-                //It is an Image
-                bitmap=getIntent().getBundleExtra("bundle").getParcelable("data");
-                postImage.setImageBitmap(bitmap);
-                typeImage.setImageResource(R.drawable.ic_action_camera);
-            }else {
-                //It is a video
-                videoUri=getIntent().getBundleExtra("bundle").getParcelable("uri");
-                String path=getRealPathFromUri();
-                Bitmap thumb = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
-                //BitmapDrawable bitmapDrawable = new BitmapDrawable(thumb);
-                postImage.setImageBitmap(thumb);
-                typeImage.setImageResource(R.drawable.ic_action_video);
+            if(getIntent().getBundleExtra("bundle").getString("from").equals("gallery_activity")){
+                //coming from gallery activity i.e user has taken a picture/video from camera
+                if(type.equals("image")){
+                    //It is an Image
+                    bitmap=getIntent().getBundleExtra("bundle").getParcelable("data");
+                    Log.d("sachin","Is bitmap==null "+(bitmap==null));
+                    postImage.setImageBitmap(bitmap);
+                    typeImage.setImageResource(R.drawable.ic_action_camera);
+                }else {
+                    //It is a video
+                    videoUri=getIntent().getBundleExtra("bundle").getParcelable("uri");
+                    String path=getRealPathFromUri();
+                    Bitmap thumb = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
+                    postImage.setImageBitmap(thumb);
+                    typeImage.setImageResource(R.drawable.ic_action_video);
+                }
+            }else{
+                //Coming from gallery fragment i.e user has chosen a photo from his own gallery
+                if(type.equals("image")){
+                    String uri = getIntent().getBundleExtra("bundle").getString("data");
+                    Log.d("sachin","In post activity URI is:"+uri);
+                    postImage.setImageURI(Uri.parse(uri.trim()));
+                }
             }
+
 
         }
 
@@ -143,7 +154,7 @@ public class PostActivity extends AppCompatActivity {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG,100,baos);
             byte[] data= baos.toByteArray();
-            final StorageReference path = storageReference.child("Posts").child(mAuth.getCurrentUser().getUid()).child(Post_id);
+            final StorageReference path = storageReference.child("Posts").child(mAuth.getCurrentUser().getUid()).child(Post_id+".jpg");
             path.putBytes(data).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {

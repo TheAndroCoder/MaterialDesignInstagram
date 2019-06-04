@@ -22,13 +22,18 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
+import com.example.instamaterial.Adapters.PhotosAdapter;
 import com.example.instamaterial.Adapters.ViewPagerAdapter;
 import com.example.instamaterial.Utilities.Utils;
+
+import java.io.File;
+import java.io.IOException;
 
 public class GalleryActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewpager;
-    private FloatingActionButton fab,camera;
+    private FloatingActionButton camera;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,8 +47,8 @@ public class GalleryActivity extends AppCompatActivity {
         setupViewPager();
     }
     private void startIntroAnimations(){
-        fab.setTranslationY(Utils.dpToPx(80));
-        fab.animate().translationY(0).setStartDelay(2000).setDuration(300).setInterpolator(new OvershootInterpolator()).start();
+        //fab.setTranslationY(Utils.dpToPx(80));
+        //fab.animate().translationY(0).setStartDelay(2000).setDuration(300).setInterpolator(new OvershootInterpolator()).start();
         camera.setTranslationY(Utils.dpToPx(80));
         camera.animate().translationY(0).setStartDelay(2000).setDuration(300).setInterpolator(new OvershootInterpolator()).start();
         tabLayout.setTranslationY(-Utils.dpToPx(60));
@@ -53,7 +58,7 @@ public class GalleryActivity extends AppCompatActivity {
     private void setupXmlViews(){
         tabLayout=findViewById(R.id.tablayout);
         viewpager=findViewById(R.id.viewpager);
-        fab=findViewById(R.id.fab);
+        //fab=findViewById(R.id.fab);
         camera=findViewById(R.id.camera);
         //setup fab click listeners
         camera.setOnClickListener(new View.OnClickListener() {
@@ -70,6 +75,7 @@ public class GalleryActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
     private void setupViewPager(){
         ViewPagerAdapter adapter=new ViewPagerAdapter(getSupportFragmentManager());
@@ -105,6 +111,7 @@ public class GalleryActivity extends AppCompatActivity {
             Bitmap photo=(Bitmap)data.getExtras().get("data");
             //Take to next Activity
             Bundle bundle=new Bundle();
+            bundle.putString("from","gallery_activity");
             bundle.putString("type","image");
             bundle.putParcelable("data",photo);
             Intent intent = new Intent(GalleryActivity.this,PostActivity.class);
@@ -115,6 +122,7 @@ public class GalleryActivity extends AppCompatActivity {
             Uri videoUri=data.getData();
             Bundle bundle=new Bundle();
             bundle.putString("type","video");
+            bundle.putString("from","gallery_activity");
             bundle.putParcelable("uri",videoUri);
             Intent intent = new Intent(GalleryActivity.this,PostActivity.class);
             intent.putExtra("bundle",bundle);
@@ -122,4 +130,25 @@ public class GalleryActivity extends AppCompatActivity {
 
         }
     }
+
+
+
+    private Bitmap getBitmap(String uri){
+        try {
+            return MediaStore.Images.Media.getBitmap(this.getContentResolver(),Uri.fromFile(new File(uri)));
+        } catch (IOException e) {
+            Log.d("sachin","into exp "+e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
+
+
 }
