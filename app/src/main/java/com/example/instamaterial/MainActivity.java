@@ -23,6 +23,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.instamaterial.Adapters.FeedAdapter;
+import com.example.instamaterial.Models.Post;
 import com.example.instamaterial.Models.User;
 import com.example.instamaterial.Services.UserService;
 import com.example.instamaterial.Utilities.DatabaseHelper;
@@ -34,10 +35,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
-public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFeedItemClicklistener{
+public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     RecyclerView recyclerView;
     boolean pendingIntroAnim=false;
@@ -48,6 +51,10 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
     private FirebaseAuth mAuth;
     private DatabaseReference myRef;
     private SharedPreferences preferences;
+    private ArrayList<User> users;
+    private  ArrayList<Post> posts;
+    private ArrayList<Integer> likesCount;
+    private ArrayList<Integer> commentsCount;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,15 +67,14 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
-        adapter=new FeedAdapter(this);
-        adapter.setOnFeedItemClicklistener(this);
-        recyclerView.setAdapter(adapter);
+        //Fetch Posts data for populating the Main Feed
+        fetchPostsData();
         //Fetch the user data and store it in Shared Preferences
         preferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
-        if(preferences.getString("UID",null)==null)
+        //if(preferences.getString("UID",null)==null)
             saveUserToPreferences();
-        else
-            Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
+        //else
+          //  Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
     }
     private void setupXmlLayouts(){
         toolbar=findViewById(R.id.toolbar);
@@ -79,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
         profile_pic=findViewById(R.id.profile_pic);
         mAuth=FirebaseAuth.getInstance();
         myRef= FirebaseDatabase.getInstance().getReference();
+        posts=new ArrayList<>();
+        users=new ArrayList<>();
+        likesCount=new ArrayList<>();
+        commentsCount=new ArrayList<>();
         //For now the profile pic icon works as signout button
         profile_pic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,19 +154,19 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
     }
     private void startContentAnimation(){
         fab.animate().translationY(0).setInterpolator(new OvershootInterpolator(1.f)).setStartDelay(300).setDuration(400).start();
-        adapter.updateItems();
+        //adapter.updateItems();
     }
 
-    @Override
-    public void onCommentsClick(View v, int position) {
-        //adapter.setOnFeedItemClicklistener(this);
-        Intent intent=new Intent(this,CommentsActivity.class);
-        int[] startLocation=new int[2];
-        v.getLocationOnScreen(startLocation);
-        intent.putExtra(CommentsActivity.ARG_DRAWING_START_LOCATION,startLocation[1]);
-        startActivity(intent);
-        overridePendingTransition(0,0);
-    }
+//    @Override
+//    public void onCommentsClick(View v, int position) {
+//        //adapter.setOnFeedItemClicklistener(this);
+//        Intent intent=new Intent(this,CommentsActivity.class);
+//        int[] startLocation=new int[2];
+//        v.getLocationOnScreen(startLocation);
+//        intent.putExtra(CommentsActivity.ARG_DRAWING_START_LOCATION,startLocation[1]);
+//        startActivity(intent);
+//        overridePendingTransition(0,0);
+//    }
 
     @Override
     public void onBackPressed() {
@@ -192,8 +202,44 @@ public class MainActivity extends AppCompatActivity implements  FeedAdapter.OnFe
                 editor.putString("USERNAME",user.getName());
                 editor.putString("EMAIL",user.getEmail());
                 editor.putString("DP_URL",user.getDp_url());
+                editor.putString("PASSWORD",user.getPassword());
                 Glide.with(MainActivity.this).load(user.getDp_url()).into(profile_pic);
                 editor.commit();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void fetchPostsData(){
+        myRef.child("Posts").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(final DataSnapshot postsShot : dataSnapshot.getChildren()) {
+                    posts.add(postsShot.getValue(Post.class));
+                }
+                for(int i=0;i<posts.size();i++){
+                    myRef.child("Users").child(posts.get(i).getBy_id()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            users.add(dataSnapshot.getValue(User.class));
+                            for(int i=0;i<posts.size();i++){
+                                commentsCount.add(0);
+                                likesCount.add(0);
+                            }
+                            adapter=new FeedAdapter(MainActivity.this,posts,users,commentsCount,likesCount);
+                            recyclerView.setAdapter(adapter);
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+                }
             }
 
             @Override

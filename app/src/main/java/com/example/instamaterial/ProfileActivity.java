@@ -1,5 +1,6 @@
 package com.example.instamaterial;
 
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -80,6 +81,14 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(ProfileActivity.this,SettingsActivity.class));
+            }
+        });
+        edit_profile_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(edit_profile_btn.getText().equals("EDIT PROFILE")){
+                    startActivity(new Intent(ProfileActivity.this,EditProfileActivity.class), ActivityOptions.makeSceneTransitionAnimation(ProfileActivity.this,profile_pic,profile_pic.getTransitionName()).toBundle());
+                }
             }
         });
     }

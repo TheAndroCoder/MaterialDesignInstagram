@@ -33,6 +33,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 public class PostActivity extends AppCompatActivity {
     private ImageView postImage,typeImage;
@@ -88,6 +90,13 @@ public class PostActivity extends AppCompatActivity {
                     String uri = getIntent().getBundleExtra("bundle").getString("data");
                     Log.d("sachin","In post activity URI is:"+uri);
                     postImage.setImageURI(Uri.parse(uri.trim()));
+                    try {
+                        bitmap= MediaStore.Images.Media.getBitmap(getContentResolver(),Uri.fromFile(new File(uri)));
+                    } catch (IOException e) {
+                        //Log.d("sachin","error "+e.getMessage());
+                        e.printStackTrace();
+                    }
+
                 }
             }
 

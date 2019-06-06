@@ -2,10 +2,21 @@ package com.example.instamaterial.Utilities;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
+import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -61,5 +72,34 @@ public class Utils {
         SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         Date d=new Date();
         return date.format(d)+" at "+time.format(d);
+    }
+    public static Bitmap getBitmapFromUrl(String s){
+        //new Thread(new Runn)
+        try {
+            URL url=new URL(s);
+            return BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.d("sachin","Bitmap returned is null");
+        return null;
+    }
+    public static void blurBitmapWithRenderscript(
+            RenderScript rs, Bitmap bitmap2) {
+        // this will blur the bitmapOriginal with a radius of 25
+        // and save it in bitmapOriginal
+        // use this constructor for best performance, because it uses
+        // USAGE_SHARED mode which reuses memory
+        final Allocation input =
+                Allocation.createFromBitmap(rs, bitmap2);
+        final Allocation output = Allocation.createTyped(rs,
+                input.getType());
+        final ScriptIntrinsicBlur script =
+                ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        // must be >0 and <= 25
+        script.setRadius(15f);
+        script.setInput(input);
+        script.forEach(output);
+        output.copyTo(bitmap2);
     }
 }
