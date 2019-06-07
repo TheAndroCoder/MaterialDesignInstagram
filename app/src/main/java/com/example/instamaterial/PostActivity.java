@@ -199,7 +199,6 @@ public class PostActivity extends AppCompatActivity {
                     });
                 }
             });
-
         }else{
             //It is a video post
 //            ByteArrayOutputStream baos = new ByteArrayOutputStream();

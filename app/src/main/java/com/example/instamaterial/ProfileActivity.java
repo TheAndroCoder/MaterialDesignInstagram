@@ -15,12 +15,19 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.instamaterial.Adapters.MyPostsRecyclerAdapter;
 import com.example.instamaterial.Models.Post;
 import com.example.instamaterial.Models.User;
+import com.example.instamaterial.Notification.APIService;
+import com.example.instamaterial.Notification.Client;
+import com.example.instamaterial.Notification.Data;
+import com.example.instamaterial.Notification.MyResponse;
+import com.example.instamaterial.Notification.Sender;
 import com.example.instamaterial.Utilities.DatabaseHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -32,6 +39,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProfileActivity extends AppCompatActivity {
     private FloatingActionButton settings_fab;
@@ -43,6 +53,8 @@ public class ProfileActivity extends AppCompatActivity {
     private RecyclerView recycler;
     private ArrayList<Post> posts;
     private MyPostsRecyclerAdapter adapter;
+    private String uid="";
+    private APIService apiService;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,10 +67,11 @@ public class ProfileActivity extends AppCompatActivity {
             settings_fab.setImageResource(R.drawable.ic_action_send);
             //TODO : count the number of posts, followers and following also check if already followed or follow request sent or recieved
             edit_profile_btn.setText("SEND FOLLOW REQUEST");
-            String uid = getIntent().getBundleExtra("bundle").getString("UID");
+            uid = getIntent().getBundleExtra("bundle").getString("UID");
             //fetch user from UID and update views
             username.setText(getIntent().getBundleExtra("bundle").getString("USERNAME"));
             Glide.with(this).load(getIntent().getBundleExtra("bundle").getString("DP_URL")).into(profile_pic);
+
         }else{
             //it is my own profile
             username.setText(preferences.getString("USERNAME",null));
@@ -74,6 +87,7 @@ public class ProfileActivity extends AppCompatActivity {
         username=findViewById(R.id.username);
         preferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
         recycler=findViewById(R.id.recycler);
+        apiService= Client.getClient("https://fcm.googleapis.com/").create(APIService.class);
         recycler.setLayoutManager(new GridLayoutManager(this,3, LinearLayoutManager.VERTICAL,false));
         posts=new ArrayList<>();
         fetchMyPosts();
@@ -89,6 +103,11 @@ public class ProfileActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(edit_profile_btn.getText().equals("EDIT PROFILE")){
                     startActivity(new Intent(ProfileActivity.this,EditProfileActivity.class), ActivityOptions.makeSceneTransitionAnimation(ProfileActivity.this,profile_pic,profile_pic.getTransitionName()).toBundle());
+                }else if(edit_profile_btn.getText().equals("SEND FOLLOW REQUEST")){
+                    //send request to the person whose profile is opened
+                    sendFollowRequest();
+                    edit_profile_btn.setText("SENT");
+                    edit_profile_btn.setClickable(false);
                 }
             }
         });
@@ -110,5 +129,39 @@ public class ProfileActivity extends AppCompatActivity {
                 Log.d("sachin","adding post");
             }
         }).start();
+    }
+    private void sendFollowRequest(){
+        Log.d("sachin","coming");
+        myRef.child("Tokens").orderByKey().equalTo(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    String tokenOfReciever = ds.getValue(String.class);
+                    Data data=new Data(mAuth.getCurrentUser().getUid(),username.getText().toString()+"","New Follow Request",uid);
+                    Sender sender= new Sender(data,tokenOfReciever);
+                    apiService.sendNotification(sender).enqueue(new Callback<MyResponse>() {
+                        @Override
+                        public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                            if(response.code()==200){
+                                if(response.body().success!=1){
+                                    Toast.makeText(ProfileActivity.this,"Failed to send",Toast.LENGTH_SHORT).show();
+                                    edit_profile_btn.setText("SEND FOLLOW REQUEST");
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<MyResponse> call, Throwable t) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }
