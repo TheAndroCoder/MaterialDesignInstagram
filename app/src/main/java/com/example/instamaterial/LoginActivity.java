@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         setupXmlViews();
         startViewAnimations(savedInstanceState);
-        startService(new Intent(this, UserService.class));
+        //startService(new Intent(this, UserService.class));
     }
     private void setupXmlViews(){
         email=findViewById(R.id.email);

@@ -59,7 +59,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CellFeedViewHo
 
     }
     @Override
-    public void onBindViewHolder(@NonNull CellFeedViewHolder holder, int i) {
+    public void onBindViewHolder(@NonNull final CellFeedViewHolder holder, int i) {
         runEnterAnimation(holder.itemView,i);
         if(posts.get(i).getType().equals("image")){
             holder.username.setText(users.get(i).getName());
@@ -72,17 +72,36 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CellFeedViewHo
             else
                 holder.comments_text.setText("No comments yet");
             holder.likes_count.setText(like_count_list.get(i)+" Likes");
+            holder.post_text.setText(posts.get(i).getPost_text());
         }else{
             holder.post_pic.setVisibility(View.GONE);
             holder.post_video.setVisibility(View.VISIBLE);
             holder.username.setText(users.get(i).getName());
+            Glide.with(context).load(users.get(i).getDp_url()).into(holder.profile_pic);
             holder.timestamp.setText(posts.get(i).getPost_date());
             holder.post_video.setVideoURI(Uri.parse(posts.get(i).getPost_url()));
+            holder.post_video.setVideoPath(posts.get(i).getPost_url());
             if(comment_count_list.get(i)!=0)
                 holder.comments_text.setText("View all "+comment_count_list.get(i)+" Comments");
             else
                 holder.comments_text.setText("No comments yet");
             holder.likes_count.setText(like_count_list.get(i)+" Likes");
+            holder.post_text.setText(posts.get(i).getPost_text());
+            holder.post_video.start();
+            holder.play_btn.setVisibility(View.VISIBLE);
+            holder.play_btn.setImageResource(R.drawable.ic_action_pause);
+            holder.play_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(holder.post_video.isPlaying()){
+                        holder.play_btn.setImageResource(R.drawable.ic_action_play);
+                        holder.post_video.pause();
+                    }else{
+                        holder.play_btn.setImageResource(R.drawable.ic_action_pause);
+                        holder.post_video.start();
+                    }
+                }
+            });
         }
     }
 
@@ -94,9 +113,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CellFeedViewHo
 
 
     public class CellFeedViewHolder extends RecyclerView.ViewHolder{
-        ImageView post_pic;
+        ImageView post_pic,play_btn;
         VideoView post_video;
-        TextView comments_text,username,timestamp,likes_count;
+        TextView comments_text,username,timestamp,likes_count,post_text;
         ImageView like_btn;
         CircleImageView profile_pic;
 
@@ -110,6 +129,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CellFeedViewHo
             like_btn=view.findViewById(R.id.heart);
             profile_pic=view.findViewById(R.id.profile_pic);
             likes_count=view.findViewById(R.id.likes_count);
+            post_text=view.findViewById(R.id.post_text);
+            play_btn=view.findViewById(R.id.play_btn);
         }
     }
 

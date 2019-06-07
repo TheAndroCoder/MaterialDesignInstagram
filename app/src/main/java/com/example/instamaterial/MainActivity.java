@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
 import com.example.instamaterial.Adapters.FeedAdapter;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private  ArrayList<Post> posts;
     private ArrayList<Integer> likesCount;
     private ArrayList<Integer> commentsCount;
+    private RelativeLayout waitingLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,10 +73,10 @@ public class MainActivity extends AppCompatActivity {
         fetchPostsData();
         //Fetch the user data and store it in Shared Preferences
         preferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
-        //if(preferences.getString("UID",null)==null)
+        if(preferences.getString("UID",null)==null)
             saveUserToPreferences();
-        //else
-          //  Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
+        else
+            Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
     }
     private void setupXmlLayouts(){
         toolbar=findViewById(R.id.toolbar);
@@ -88,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
         posts=new ArrayList<>();
         users=new ArrayList<>();
         likesCount=new ArrayList<>();
+        waitingLayout=findViewById(R.id.waiting);
+        waitingLayout.setVisibility(View.VISIBLE);
         commentsCount=new ArrayList<>();
         //For now the profile pic icon works as signout button
         profile_pic.setOnClickListener(new View.OnClickListener() {
@@ -231,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             adapter=new FeedAdapter(MainActivity.this,posts,users,commentsCount,likesCount);
                             recyclerView.setAdapter(adapter);
+                            waitingLayout.setVisibility(View.GONE);
                         }
 
                         @Override

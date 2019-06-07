@@ -34,6 +34,15 @@
             android:layout_marginRight="10dp"
             />
     </android.support.v7.widget.Toolbar>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:id="@+id/waiting"
+        android:visibility="gone">
+        <include
+            layout="@layout/mainfeed_waiting_layout"/>
+    </RelativeLayout>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvFeed"
         android:layout_width="match_parent"

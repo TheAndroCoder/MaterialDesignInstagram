@@ -1,5 +1,7 @@
 package com.example.instamaterial;
 
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,6 +36,8 @@ public class VideoFragment extends Fragment {
     private VideosAdapter adapter;
     private ImageView playpause;
     private TextView timeTextView;
+    private FloatingActionButton selectBtn;
+    private Uri uri=null;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -41,8 +46,20 @@ public class VideoFragment extends Fragment {
         recycler=view.findViewById(R.id.recycler);
         playpause=view.findViewById(R.id.playpause);
         timeTextView=view.findViewById(R.id.time);
+        selectBtn=view.findViewById(R.id.selectBtn);
         recycler.setLayoutManager(new GridLayoutManager(getActivity(),3,LinearLayoutManager.VERTICAL,false));
         fetchVideos();
+        selectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle bundle=new Bundle();
+                bundle.putString("type","video");
+                bundle.putString("from","video_fragment");
+                bundle.putParcelable("uri",uri);
+                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(getActivity(),videoView,videoView.getTransitionName());
+                startActivity(new Intent(getActivity(),PostActivity.class).putExtra("bundle",bundle),options.toBundle());
+            }
+        });
         return view;
     }
     private void fetchVideos(){
@@ -63,6 +80,7 @@ public class VideoFragment extends Fragment {
                     videoView.setBackgroundDrawable(bitmapDrawable);
                     videoView.setVideoURI(Uri.parse(list.get(0)));
                     getVideoLength(list.get(0));
+                    uri=Uri.parse(list.get(0));
                 }
                 playpause.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -82,6 +100,7 @@ public class VideoFragment extends Fragment {
                     public void onItemClick(View view, int position) {
                         Log.d("sachin",list.get(position));
                         videoView.setVideoURI(Uri.parse(list.get(position)));
+                        uri=Uri.parse(list.get(position));
                         //videoView.start();
                         if(!videoView.isPlaying()) {
                             Bitmap thumb = ThumbnailUtils.createVideoThumbnail(list.get(position), MediaStore.Images.Thumbnails.MINI_KIND);
@@ -111,6 +130,7 @@ public class VideoFragment extends Fragment {
 
             }
         }).start();
+
     }
     private void getVideoLength(String uri){
         MediaMetadataRetriever retriever=new MediaMetadataRetriever();

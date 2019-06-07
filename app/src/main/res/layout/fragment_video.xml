@@ -13,6 +13,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:transitionName="sharedPic"
         android:layout_alignParentLeft="true"
         />
         <RelativeLayout
@@ -47,4 +48,13 @@
         android:layout_height="wrap_content"
         android:id="@+id/recycler"
         android:layout_below="@+id/videoRel"></android.support.v7.widget.RecyclerView>
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_action_check"
+        android:id="@+id/selectBtn"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"/>
 </RelativeLayout>

@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.example.instamaterial.Models.Post;
 import com.example.instamaterial.Utilities.DatabaseHelper;
@@ -97,6 +98,12 @@ public class PostActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
+                }else{
+                    videoUri=getIntent().getBundleExtra("bundle").getParcelable("uri");
+                    String path=getRealPathFromUri();
+                    Bitmap thumb = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
+                    postImage.setImageBitmap(thumb);
+                    typeImage.setImageResource(R.drawable.ic_action_video);
                 }
             }
 
@@ -109,9 +116,22 @@ public class PostActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //Put the post into Sqlite DB, Firebase DB and Image/Video into Firebase Storage
                 //Upload the image to firebase storage first so that we get the download link and then we can set the Post POJO
-                progress.setVisibility(View.VISIBLE);
-                sendPost.setVisibility(View.GONE);
-                post();
+
+                if(!post_text.getText().toString().equals("")){
+                    if(type.equals("image")) {
+                        progress.setVisibility(View.VISIBLE);
+                        sendPost.setVisibility(View.GONE);
+                        post();
+                    }else{
+                        progress.setVisibility(View.VISIBLE);
+                        sendPost.setVisibility(View.GONE);
+                        post();
+                    }
+                }else{
+                    post_text.setError("Write Something about this "+type);
+                }
+
+
             }
         });
     }
@@ -182,6 +202,39 @@ public class PostActivity extends AppCompatActivity {
 
         }else{
             //It is a video post
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            bitmap.compress(Bitmap.CompressFormat.JPEG,100,baos);
+//            byte[] data= baos.toByteArray();
+            final StorageReference path = storageReference.child("Posts").child(mAuth.getCurrentUser().getUid()).child(Post_id+".mp4");
+            UploadTask uploadTask = path.putFile(Uri.fromFile(new File(getRealPathFromUri(videoUri))));
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    path.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Post post=new Post(Post_id,mAuth.getCurrentUser().getUid(),Utils.getDateString(),Utils.getRandomkey(),type,uri.toString(),post_text.getText().toString(),Utils.getRandomkey());
+                            myRef.child("Posts").child(Post_id).setValue(post);
+                            helper.insertPost(post);
+                            PostActivity.this.startActivity(new Intent(PostActivity.this,MainActivity.class));
+                            PostActivity.this.finish();
+                        }
+                    });
+                }
+            });
         }
     }
+    private String getRealPathFromUri(Uri uri){
+        String res;
+        Cursor cursor=this.getContentResolver().query(uri,null,null,null,null);
+        if(cursor==null){
+            res=uri.getPath();
+        }else{
+            cursor.moveToFirst();
+            int idx=cursor.getColumnIndex(MediaStore.Video.VideoColumns.DATA);
+            res=cursor.getString(idx);
+        }
+        return  res;
+    }
+
 }

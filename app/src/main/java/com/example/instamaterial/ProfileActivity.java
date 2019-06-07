@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
@@ -97,21 +98,7 @@ public class ProfileActivity extends AppCompatActivity {
         settings_fab.setScaleY(0);
         settings_fab.animate().setStartDelay(1000).setDuration(300).scaleX(1).scaleY(1).setInterpolator(new OvershootInterpolator()).start();
     }
-    private void fetchUser(String uid){
-        myRef.child("Users").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user=dataSnapshot.getValue(User.class);
-                username.setText(user.getName());
-                Glide.with(ProfileActivity.this).load(user.getDp_url()).into(profile_pic);
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
     private void fetchMyPosts(){
         new Thread(new Runnable() {
             @Override
@@ -120,6 +107,7 @@ public class ProfileActivity extends AppCompatActivity {
                 posts=helper.getMyPosts();
                 adapter=new MyPostsRecyclerAdapter(ProfileActivity.this,posts);
                 recycler.setAdapter(adapter);
+                Log.d("sachin","adding post");
             }
         }).start();
     }

@@ -112,6 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             post.setPost_text(cursor.getString(cursor.getColumnIndex(POST_TEXT)));
             post.setLike_id(cursor.getString(cursor.getColumnIndex(LIKE_ID)));
             posts.add(post);
+            Log.d("sachin","adding 1 row "+post.getType());
         }
         return posts;
     }
