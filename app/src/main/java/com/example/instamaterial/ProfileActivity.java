@@ -61,9 +61,15 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         setupXmlViews();
         startIntroAnimation();
-        //check if it is my profile or someone else's profile
-        if(getIntent().getBundleExtra("bundle")!=null){
-            //It is someone else's profile
+        //If coming from notification then handle it here
+        if(getIntent().getBundleExtra("bundle").getString("from").equals("notification")){
+            //It is coming from notification
+            uid = getIntent().getBundleExtra("bundle").getString("UID");
+            Log.d("sachin","Inside notification");
+            fetchUser();
+            edit_profile_btn.setText("ACCEPT REQUEST");
+        }else if(getIntent().getBundleExtra("bundle").getString("from").equals("search_activity")){
+            //It is someone else's profile hence coming from search activity
             settings_fab.setImageResource(R.drawable.ic_action_send);
             //TODO : count the number of posts, followers and following also check if already followed or follow request sent or recieved
             edit_profile_btn.setText("SEND FOLLOW REQUEST");
@@ -71,9 +77,9 @@ public class ProfileActivity extends AppCompatActivity {
             //fetch user from UID and update views
             username.setText(getIntent().getBundleExtra("bundle").getString("USERNAME"));
             Glide.with(this).load(getIntent().getBundleExtra("bundle").getString("DP_URL")).into(profile_pic);
-
         }else{
-            //it is my own profile
+            //it is my own profile hence coming from main activity
+            Log.d("sachin","own profile bhaabche");
             username.setText(preferences.getString("USERNAME",null));
             Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
         }
@@ -83,6 +89,7 @@ public class ProfileActivity extends AppCompatActivity {
         edit_profile_btn=findViewById(R.id.edit_profile_btn);
         mAuth=FirebaseAuth.getInstance();
         myRef= FirebaseDatabase.getInstance().getReference();
+        checkIfAlreadyFriends();
         profile_pic=findViewById(R.id.profile_pic);
         username=findViewById(R.id.username);
         preferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
@@ -108,6 +115,11 @@ public class ProfileActivity extends AppCompatActivity {
                     sendFollowRequest();
                     edit_profile_btn.setText("SENT");
                     edit_profile_btn.setClickable(false);
+                }else if(edit_profile_btn.getText().equals("ACCEPT REQUEST")){
+                    edit_profile_btn.setClickable(false);
+                    edit_profile_btn.setText("FOLLOWING");
+                    myRef.child("Friends").child(mAuth.getCurrentUser().getUid()).push().setValue(uid);
+                    myRef.child("Friends").child(uid).push().setValue(mAuth.getCurrentUser().getUid());
                 }
             }
         });
@@ -155,6 +167,39 @@ public class ProfileActivity extends AppCompatActivity {
 
                         }
                     });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void fetchUser(){
+        myRef.child("Users").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                username.setText(user.getName());
+                Glide.with(ProfileActivity.this).load(user.getDp_url()).into(profile_pic);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void checkIfAlreadyFriends(){
+        myRef.child("Friends").child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    if(ds.getValue().toString().equals(uid)){
+                        edit_profile_btn.setText("FOLLOWING");
+                        break;
+                    }
                 }
             }
 

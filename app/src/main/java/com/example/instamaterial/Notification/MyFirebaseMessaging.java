@@ -16,6 +16,8 @@ import android.util.Log;
 import com.example.instamaterial.ProfileActivity;
 import com.example.instamaterial.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -34,11 +36,13 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         String sent_by=remoteMessage.getData().get("user");
         String title = remoteMessage.getData().get("title");
         String message = remoteMessage.getData().get("body");
+        Log.d("sachin","sent_by "+sent_by+" ");
         Intent intent=new Intent(this, ProfileActivity.class);
         int notificationId=Integer.parseInt(sent_by.replaceAll("[\\D]",""));
         Bundle bundle=new Bundle();
         bundle.putString("UID",sent_by);
-        intent.putExtras(bundle);
+        bundle.putString("from","notification");
+        intent.putExtra("bundle",bundle);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         Uri defaultTone= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         String CHANNEL_ID = "my_channel";
@@ -51,6 +55,8 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
                     .setChannelId(CHANNEL_ID)
                     .setContentText(message)
                     .setSound(defaultTone)
+                    .setAutoCancel(true)
+                    .setContentIntent(PendingIntent.getActivity(this,notificationId,intent,PendingIntent.FLAG_ONE_SHOT))
                     .setSmallIcon(R.drawable.ic_launcher).build();
             NotificationManager manager=(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             manager.createNotificationChannel(channel);
@@ -67,5 +73,14 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
             manager.notify(notificationId,builder.build());
         }
 
+    }
+
+    @Override
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        Log.d("sachin","New token recieved");
+        FirebaseAuth mAuth=FirebaseAuth.getInstance();
+        DatabaseReference myRef= FirebaseDatabase.getInstance().getReference();
+        myRef.child("Tokens").child(mAuth.getCurrentUser().getUid()).setValue(s);
     }
 }

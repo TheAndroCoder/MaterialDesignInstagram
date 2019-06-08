@@ -51,6 +51,7 @@ public class SearchRecyclerAdapter extends RecyclerView.Adapter<SearchRecyclerAd
                 b.putString("UID",users.get(i).getUid());
                 b.putString("DP_URL",users.get(i).getDp_url());
                 b.putString("USERNAME",users.get(i).getName());
+                b.putString("from","search_activity");
                 Intent intent=new Intent(context,ProfileActivity.class);
                 intent.putExtra("bundle",b);
                 ActivityOptions options =  ActivityOptions.makeSceneTransitionAnimation((Activity)context, myViewHolder.profile_pic,"sharedProfilePic");

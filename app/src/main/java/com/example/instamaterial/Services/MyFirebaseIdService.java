@@ -1,20 +1,24 @@
 package com.example.instamaterial.Services;
 
+import android.util.Log;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.google.firebase.messaging.FirebaseMessagingService;
 
-public class MyFirebaseIdService extends FirebaseInstanceIdService {
+/**
+ * This is a deprecated method hence don't use it
+ */
+public class MyFirebaseIdService extends FirebaseMessagingService {
     @Override
-    public void onTokenRefresh() {
-        super.onTokenRefresh();
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        Log.d("sachin","New token recieved");
         FirebaseAuth mAuth=FirebaseAuth.getInstance();
-        if(mAuth.getCurrentUser()!=null){
-            DatabaseReference myRef= FirebaseDatabase.getInstance().getReference();
-            myRef.child("Tokens").child(mAuth.getCurrentUser().getUid()).setValue(FirebaseInstanceId.getInstance().getToken());
-        }
-
+        DatabaseReference myRef=FirebaseDatabase.getInstance().getReference();
+        myRef.child("Tokens").child(mAuth.getCurrentUser().getUid()).setValue(s);
     }
 }

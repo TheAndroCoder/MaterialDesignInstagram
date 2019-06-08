@@ -33,13 +33,7 @@
         <activity android:name=".PostActivity"/>
         <activity android:name=".SearchActivity"/>
         <activity android:name=".EditProfileActivity"/>
-        <service android:name=".Services.MyFirebaseIdService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"></action>
-            </intent-filter>
-        </service>
+
         <service android:name=".Notification.MyFirebaseMessaging"
             android:enabled="true"
             android:exported="true">

@@ -29,12 +29,16 @@ import com.example.instamaterial.Models.User;
 import com.example.instamaterial.Services.UserService;
 import com.example.instamaterial.Utilities.DatabaseHelper;
 import com.example.instamaterial.Utilities.Utils;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.ArrayList;
 
@@ -98,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //mAuth.signOut();
+                Bundle b = new Bundle();
+                b.putString("from","main_activity");
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,profile_pic,"sharedProfilePic");
-                startActivity(new Intent(MainActivity.this,ProfileActivity.class),options.toBundle());
+                startActivity(new Intent(MainActivity.this,ProfileActivity.class).putExtra("bundle",b),options.toBundle());
                 //finish();
             }
         });
@@ -187,7 +193,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this,LoginActivity.class));
             finish();
         }
-        startService(new Intent(this, UserService.class));
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                String token=task.getResult().getToken();
+                myRef.child("Tokens").child(mAuth.getCurrentUser().getUid()).setValue(token);
+            }
+        });
+        //startService(new Intent(this, UserService.class));
 
     }
     private void askForPermissions(){
