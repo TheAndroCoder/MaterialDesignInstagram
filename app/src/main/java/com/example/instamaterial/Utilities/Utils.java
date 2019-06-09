@@ -97,7 +97,7 @@ public class Utils {
         final ScriptIntrinsicBlur script =
                 ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
         // must be >0 and <= 25
-        script.setRadius(15f);
+        script.setRadius(25f);
         script.setInput(input);
         script.forEach(output);
         output.copyTo(bitmap2);

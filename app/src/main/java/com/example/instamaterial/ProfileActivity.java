@@ -15,7 +15,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,7 +78,6 @@ public class ProfileActivity extends AppCompatActivity {
             Glide.with(this).load(getIntent().getBundleExtra("bundle").getString("DP_URL")).into(profile_pic);
         }else{
             //it is my own profile hence coming from main activity
-            Log.d("sachin","own profile bhaabche");
             username.setText(preferences.getString("USERNAME",null));
             Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
         }
@@ -102,7 +100,10 @@ public class ProfileActivity extends AppCompatActivity {
         settings_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(ProfileActivity.this,SettingsActivity.class));
+                if(uid=="")
+                    startActivity(new Intent(ProfileActivity.this,SettingsActivity.class));
+                else
+                    Toast.makeText(ProfileActivity.this, "Direct Messaging will be available from InstaMaterial v1.2", Toast.LENGTH_SHORT).show();
             }
         });
         edit_profile_btn.setOnClickListener(new View.OnClickListener() {
@@ -164,7 +165,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                         @Override
                         public void onFailure(Call<MyResponse> call, Throwable t) {
-
+                            Toast.makeText(ProfileActivity.this, "error : "+t.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -198,6 +199,7 @@ public class ProfileActivity extends AppCompatActivity {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     if(ds.getValue().toString().equals(uid)){
                         edit_profile_btn.setText("FOLLOWING");
+                        edit_profile_btn.setClickable(false);
                         break;
                     }
                 }

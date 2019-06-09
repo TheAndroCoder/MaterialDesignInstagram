@@ -140,6 +140,7 @@ public class CameraFragment extends Fragment {
             e.printStackTrace();
         }
 
+
     }
     private void takePicture(){
         if(cameraDevice==null)
@@ -295,4 +296,6 @@ public class CameraFragment extends Fragment {
         mHandlerThread.start();
         mbackgroundHandler=new Handler(mHandlerThread.getLooper());
     }
+
+
 }

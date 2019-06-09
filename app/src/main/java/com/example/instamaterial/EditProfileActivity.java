@@ -1,15 +1,19 @@
 package com.example.instamaterial;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.renderscript.RenderScript;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Patterns;
@@ -24,6 +28,7 @@ import com.example.instamaterial.Models.User;
 import com.example.instamaterial.Utilities.Utils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -33,6 +38,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -49,6 +57,8 @@ public class EditProfileActivity extends AppCompatActivity {
     private DatabaseReference myRef;
     private EditText username,email,password;
     private ProgressBar progress;
+    private FloatingActionButton change_profile_pic;
+    private StorageReference storageReference;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +75,8 @@ public class EditProfileActivity extends AppCompatActivity {
         password=findViewById(R.id.password);
         progress=findViewById(R.id.progress);
         back_btn=findViewById(R.id.back);
+        storageReference= FirebaseStorage.getInstance().getReference();
+        change_profile_pic=findViewById(R.id.change_profile_pic);
         update_btn=findViewById(R.id.saveDetails);
         myRef= FirebaseDatabase.getInstance().getReference();
         sharedPreferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
@@ -168,6 +180,13 @@ public class EditProfileActivity extends AppCompatActivity {
                 EditProfileActivity.this.onBackPressed();
             }
         });
+        change_profile_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent,2002);
+            }
+        });
     }
     private boolean checkValidations(){
         if(!Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()){
@@ -177,5 +196,37 @@ public class EditProfileActivity extends AppCompatActivity {
             password.setError("Password too short");
         }
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(requestCode==2002 && resultCode== Activity.RESULT_OK){
+            Uri uri1 = data.getData();
+            storageReference=storageReference.child("Profile").child(mAuth.getCurrentUser().getUid()).child("dp.jpg");
+            storageReference.putFile(uri1).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if(task.isSuccessful()){
+                        storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                myRef.child("Users").child(mAuth.getCurrentUser().getUid()).child("dp_url").setValue(uri.toString());
+                                SharedPreferences.Editor editor=sharedPreferences.edit();
+                                editor.putString("DP_URL",uri.toString());
+                                editor.commit();
+                                Glide.with(EditProfileActivity.this).load(sharedPreferences.getString("DP_URL",null)).into(profile_pic);
+                            }
+                        });
+                    }else{
+                        Toast.makeText(EditProfileActivity.this, "Task Failed", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(EditProfileActivity.this, "Failed to upload", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }
