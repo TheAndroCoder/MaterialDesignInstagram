@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
@@ -61,6 +62,16 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Integer> likesCount;
     private ArrayList<Integer> commentsCount;
     private RelativeLayout waitingLayout;
+
+    private interface FirebaseCallback1{
+         void friendsCallback(ArrayList<String> list);
+    }
+    private interface FirebaseCallback2{
+        void postsCallback(Post post,User user);
+    }
+    private interface FirebaseCallback3{
+        void userCallback(User user);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,10 +82,13 @@ public class MainActivity extends AppCompatActivity {
             pendingIntroAnim=true;
             startIntroAnimation();
         }
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         //Fetch Posts data for populating the Main Feed
-        fetchPostsData();
+
+        //CallBack Hell starts
+        //TODO: IMPORTANT : CALLBACK HELL
+        //CallBack Hell ends
+
         //Fetch the user data and store it in Shared Preferences
         preferences=getSharedPreferences("USER_PREFERENCES", Context.MODE_PRIVATE);
         if(preferences.getString("UID",null)==null)
@@ -123,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0,0);
             }
         });
+
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -230,34 +245,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void fetchPostsData(){
-        myRef.child("Posts").addListenerForSingleValueEvent(new ValueEventListener() {
+    private void fetchFriends(final FirebaseCallback1 firebaseCallback1){
+        //First fetch friends list then fetch the posts of friends and self
+        myRef.child("Friends").child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(final DataSnapshot postsShot : dataSnapshot.getChildren()) {
-                    posts.add(postsShot.getValue(Post.class));
+                ArrayList<String> list=new ArrayList<>();
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    list.add(ds.getValue(String.class));
                 }
-                for(int i=0;i<posts.size();i++){
-                    myRef.child("Users").child(posts.get(i).getBy_id()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            users.add(dataSnapshot.getValue(User.class));
-                            for(int i=0;i<posts.size();i++){
-                                commentsCount.add(0);
-                                likesCount.add(0);
-                            }
-                            adapter=new FeedAdapter(MainActivity.this,posts,users,commentsCount,likesCount);
-                            recyclerView.setAdapter(adapter);
-                            waitingLayout.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-                }
+                firebaseCallback1.friendsCallback(list);
             }
 
             @Override
@@ -265,5 +262,87 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+//        myRef.child("Posts").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for(final DataSnapshot postsShot : dataSnapshot.getChildren()) {
+//                    posts.add(postsShot.getValue(Post.class));
+//                }
+//                for(int i=0;i<posts.size();i++){
+//                    myRef.child("Users").child(posts.get(i).getBy_id()).addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                            users.add(dataSnapshot.getValue(User.class));
+//                            for(int i=0;i<posts.size();i++){
+//                                commentsCount.add(0);
+//                                likesCount.add(0);
+//                            }
+//                            adapter=new FeedAdapter(MainActivity.this,posts,users,commentsCount,likesCount);
+//                            recyclerView.setAdapter(adapter);
+//                            waitingLayout.setVisibility(View.GONE);
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                        }
+//                    });
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+    }
+    private void fetchPostsAndUser(final FirebaseCallback2 firebaseCallback2,final ArrayList<String> list){
+        myRef.child("Posts").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //final ArrayList<Post> l=new ArrayList<>();
+                //ArrayList<User> u = new ArrayList<>();
+                for(final DataSnapshot ds : dataSnapshot.getChildren()){
+                    if(list.contains(ds.getValue(Post.class).getBy_id())){
+                        //l.add(ds.getValue(Post.class));
+                        myRef.child("Users").child(ds.getValue(Post.class).getBy_id()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                firebaseCallback2.postsCallback(ds.getValue(Post.class),dataSnapshot.getValue(User.class));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+                //firebaseCallback2.postsCallback(l);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void fetchUserWhoPosted(final FirebaseCallback3 firebaseCallback3, String uid){
+        Log.d("sachin","Trying for id ="+uid);
+        myRef.child("Users").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //users.add(dataSnapshot.getValue(User.class));
+                firebaseCallback3.userCallback(dataSnapshot.getValue(User.class));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 }

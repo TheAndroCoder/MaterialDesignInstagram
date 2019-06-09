@@ -87,7 +87,7 @@ public class SearchActivity extends AppCompatActivity {
                 ArrayList<User> users=new ArrayList<>();
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     User user = ds.getValue(User.class);
-                    if(user.getName().contains(charSequence) && !user.getUid().equals(mAuth.getCurrentUser().getUid())){
+                    if(user.getName().toLowerCase().contains(charSequence.toString().toLowerCase()) && !user.getUid().equals(mAuth.getCurrentUser().getUid())){
                         users.add(user);
                     }
                 }

@@ -107,7 +107,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.CellFeedViewHo
 
     @Override
     public int getItemCount() {
-        return users.size();
+        return posts.size();
     }
 
 

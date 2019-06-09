@@ -66,6 +66,7 @@ public class ProfileActivity extends AppCompatActivity {
             uid = getIntent().getBundleExtra("bundle").getString("UID");
             Log.d("sachin","Inside notification");
             fetchUser();
+            fetchHisPosts();
             edit_profile_btn.setText("ACCEPT REQUEST");
         }else if(getIntent().getBundleExtra("bundle").getString("from").equals("search_activity")){
             //It is someone else's profile hence coming from search activity
@@ -76,10 +77,12 @@ public class ProfileActivity extends AppCompatActivity {
             //fetch user from UID and update views
             username.setText(getIntent().getBundleExtra("bundle").getString("USERNAME"));
             Glide.with(this).load(getIntent().getBundleExtra("bundle").getString("DP_URL")).into(profile_pic);
+            fetchHisPosts();
         }else{
             //it is my own profile hence coming from main activity
             username.setText(preferences.getString("USERNAME",null));
             Glide.with(this).load(preferences.getString("DP_URL",null)).into(profile_pic);
+            fetchMyPosts();
         }
     }
     private void setupXmlViews(){
@@ -95,7 +98,6 @@ public class ProfileActivity extends AppCompatActivity {
         apiService= Client.getClient("https://fcm.googleapis.com/").create(APIService.class);
         recycler.setLayoutManager(new GridLayoutManager(this,3, LinearLayoutManager.VERTICAL,false));
         posts=new ArrayList<>();
-        fetchMyPosts();
         //TODO : set on click listeners here
         settings_fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -203,6 +205,24 @@ public class ProfileActivity extends AppCompatActivity {
                         break;
                     }
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void fetchHisPosts(){
+        myRef.child("Posts").orderByChild("by_id").equalTo(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    posts.add(ds.getValue(Post.class));
+                    Log.d("sachin","Post ka naam is "+ds.getValue(Post.class).getPost_text());
+                }
+                adapter=new MyPostsRecyclerAdapter(ProfileActivity.this,posts);
+                recycler.setAdapter(adapter);
             }
 
             @Override
