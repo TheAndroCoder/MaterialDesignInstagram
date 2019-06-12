@@ -86,7 +86,25 @@ public class MainActivity extends AppCompatActivity {
         //Fetch Posts data for populating the Main Feed
 
         //CallBack Hell starts
-        //TODO: IMPORTANT : CALLBACK HELL
+        fetchFriends(new FirebaseCallback1() {
+            @Override
+            public void friendsCallback(ArrayList<String> list) {
+                fetchPostsAndUser(new FirebaseCallback2() {
+                    @Override
+                    public void postsCallback(Post post, User user) {
+                        posts.add(post);
+                        users.add(user);
+                        for(int i=0;i<posts.size();i++){
+                            commentsCount.add(0);
+                            likesCount.add(0);
+                        }
+                        adapter=new FeedAdapter(MainActivity.this,posts,users,commentsCount,likesCount);
+                        recyclerView.setAdapter(adapter);
+                        waitingLayout.setVisibility(View.GONE);
+                    }
+                },list);
+            }
+        });
         //CallBack Hell ends
 
         //Fetch the user data and store it in Shared Preferences
@@ -251,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 ArrayList<String> list=new ArrayList<>();
+                list.add(mAuth.getCurrentUser().getUid());
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     list.add(ds.getValue(String.class));
                 }
@@ -262,40 +281,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-//        myRef.child("Posts").addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                for(final DataSnapshot postsShot : dataSnapshot.getChildren()) {
-//                    posts.add(postsShot.getValue(Post.class));
-//                }
-//                for(int i=0;i<posts.size();i++){
-//                    myRef.child("Users").child(posts.get(i).getBy_id()).addListenerForSingleValueEvent(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                            users.add(dataSnapshot.getValue(User.class));
-//                            for(int i=0;i<posts.size();i++){
-//                                commentsCount.add(0);
-//                                likesCount.add(0);
-//                            }
-//                            adapter=new FeedAdapter(MainActivity.this,posts,users,commentsCount,likesCount);
-//                            recyclerView.setAdapter(adapter);
-//                            waitingLayout.setVisibility(View.GONE);
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                        }
-//                    });
-//
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
     }
     private void fetchPostsAndUser(final FirebaseCallback2 firebaseCallback2,final ArrayList<String> list){
         myRef.child("Posts").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -329,20 +314,5 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void fetchUserWhoPosted(final FirebaseCallback3 firebaseCallback3, String uid){
-        Log.d("sachin","Trying for id ="+uid);
-        myRef.child("Users").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //users.add(dataSnapshot.getValue(User.class));
-                firebaseCallback3.userCallback(dataSnapshot.getValue(User.class));
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
 }
